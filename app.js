@@ -1,3 +1,4 @@
+
 function addToCart(item) {
   let cart = JSON.parse(localStorage.getItem("cart")) || [];
   cart.push(item);

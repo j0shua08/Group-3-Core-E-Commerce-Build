@@ -12,3 +12,4 @@ if (cart.length === 0) {
     cartOutput.appendChild(li);
   });
 }
+
