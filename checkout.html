@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Checkout</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 24px; }
+    .card { max-width: 720px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; }
+    h1 { margin: 0 0 8px; }
+    .muted { color: #6b7280; margin: 0 0 16px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { padding: 8px 6px; border-bottom: 1px solid #f1f5f9; text-align: left; }
+    tfoot td { font-weight: 700; }
+    .actions { margin-top: 16px; display: flex; gap: 8px; }
+    button { padding: 10px 14px; border: 0; border-radius: 8px; cursor: pointer; }
+    #placeOrder { background: black; color: white; }
+    #clearCart { background: #e5e7eb; }
+    .ok { color: #166534; background: #dcfce7; padding: 10px; border-radius: 8px; margin-top: 16px; display:none; }
+    .err { color: #991b1b; background: #fee2e2; padding: 10px; border-radius: 8px; margin-top: 16px; display:none; }
+    .small { font-size: 12px; color: #6b7280; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Checkout</h1>
+    <p class="muted">Review your items then place your order.</p>
+
+    <table id="cartTable" aria-label="Cart items">
+      <thead>
+        <tr><th>Item</th><th>Qty</th><th>Price</th><th>Subtotal</th></tr>
+      </thead>
+      <tbody id="cartBody"></tbody>
+      <tfoot>
+        <tr><td colspan="3">Total</td><td id="grandTotal">₱0</td></tr>
+      </tfoot>
+    </table>
+
+    <div class="actions">
+      <button type="button" id="placeOrder">Place Order</button>
+      <button type="button" id="clearCart">Clear Cart</button>
+    </div>
+
+    <div id="ok" class="ok"></div>
+    <div id="err" class="err"></div>
+  </div>
+
+  <script>
+    // ---- CONFIG: if your backend runs elsewhere, change this base URL ----
+    const API_BASE = "http://localhost:8000";
+
+    // Load cart from localStorage. Expected shape per item:
+    // { id, name, price, qty } — adapt if your keys differ.
+    function loadCart() {
+      try {
+        return JSON.parse(localStorage.getItem("cart") || "[]");
+      } catch {
+        return [];
+      }
+    }
+
+    function formatPeso(n) {
+      const num = Number(n) || 0;
+      return "₱" + num.toLocaleString("en-PH", { maximumFractionDigits: 0 });
+    }
+
+    function renderCart() {
+      const cart = loadCart();
+      const tbody = document.getElementById("cartBody");
+      const totalEl = document.getElementById("grandTotal");
+      tbody.innerHTML = "";
+
+      let total = 0;
+      cart.forEach(item => {
+        const sub = (Number(item.price) || 0) * (Number(item.qty) || 0);
+        total += sub;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${item.name ?? "(Unnamed)"}</td>
+          <td>${item.qty ?? 0}</td>
+          <td>${formatPeso(item.price)}</td>
+          <td>${formatPeso(sub)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      totalEl.textContent = formatPeso(total);
+    }
+
+    async function doCheckout() {
+      const ok = document.getElementById("ok");
+      const err = document.getElementById("err");
+      ok.style.display = "none";
+      err.style.display = "none";
+
+      const cart = loadCart();
+      // Build payload the server expects
+      const items = cart.map(i => ({
+        productId: i.id ?? i.productId ?? String(i.name || "item"),
+        name: i.name ?? "Item",
+        price: Number(i.price) || 0,
+        qty: Number(i.qty) || 0
+      }));
+
+      try {
+        const resp = await fetch(`${API_BASE}/api/cart/checkout`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ items })
+        });
+
+        if (!resp.ok) {
+          const text = await resp.text();
+          throw new Error(`Checkout failed: ${resp.status} ${text}`);
+        }
+
+        const data = await resp.json();
+        const pickup = data.pickup || { etaMins: 15, fee: 0 };
+
+        ok.innerHTML = `
+          <strong>Order Confirmed!</strong><br/>
+          Order ID: ${data.orderId ?? "(pending)"}<br/>
+          Total: ${formatPeso(data.total)}<br/>
+          Pickup ETA: ${pickup.etaMins} mins<br/>
+          Fee: ${formatPeso(pickup.fee)}
+        `;
+        ok.style.display = "block";
+
+        // Clear cart on success (optional)
+        localStorage.removeItem("cart");
+        renderCart();
+      } catch (e) {
+        err.textContent = e.message || "Something went wrong during checkout.";
+        err.style.display = "block";
+      }
+    }
+
+    function clearCart() {
+      localStorage.removeItem("cart");
+      renderCart();
+      const ok = document.getElementById("ok");
+      const err = document.getElementById("err");
+      ok.style.display = "none";
+      err.style.display = "none";
+    }
+
+    // Hook up buttons
+    document.getElementById("placeOrder").addEventListener("click", doCheckout);
+    document.getElementById("clearCart").addEventListener("click", clearCart);
+
+    // Initial render
+    renderCart();
+  </script>
+</body>
+</html>

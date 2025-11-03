@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Order Confirmed • UniThrift</title>
+<link rel="stylesheet" href="styles.css"></head>
+<body style="max-width:700px;margin:40px auto;padding:0 16px">
+  <h1>Order Confirmed 🎉</h1>
+  <p>Your order ID: <strong id="oid">—</strong></p>
+  <a href="index.html" class="btn">Back to Home</a>
+  <script>
+    const id = new URLSearchParams(location.search).get("orderId") || "LOCAL-DEMO";
+    document.getElementById("oid").textContent = id;
+  </script>
+</body></html>

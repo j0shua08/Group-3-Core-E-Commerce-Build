@@ -1,20 +1,32 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <link rel="stylesheet" href="css/styles.css">
-  <script defer src="js/cart.js"></script>
-  <title>Cart</title>
-</head>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Cart • UniThrift</title>
+<link rel="stylesheet" href="styles.css"></head>
 <body>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="listings.html">Listings</a>
-    <a href="cart.html">Cart</a>
-  </nav>
-
-  <div class="container">
-    <h2>Your Cart</h2>
-    <ul id="cart-output"></ul>
-  </div>
-</body>
-</html>
+  <header style="padding:12px 16px;background:#fff;border-bottom:1px solid #eee">
+    <a href="index.html">← Continue shopping</a>
+  </header>
+  <main style="max-width:800px;margin:16px auto;padding:0 16px">
+    <h1>Your Cart</h1>
+    <div id="list"></div>
+    <h3 id="total"></h3>
+    <a href="checkout.html" class="btn">Checkout</a>
+  </main>
+  <script>
+    function peso(n){ return `₱${n.toFixed(0)}` }
+    function load(){
+      const list = document.getElementById("list");
+      const raw = localStorage.getItem("cart") || "[]";
+      const cart = JSON.parse(raw);
+      let total = 0;
+      list.innerHTML = cart.map(i=>{
+        total += i.price * i.quantity;
+        return `<div style="display:flex;justify-content:space-between;border-bottom:1px solid #eee;padding:8px 0">
+          <div>${i.name} × ${i.quantity}</div>
+          <div>${peso(i.price * i.quantity)}</div>
+        </div>`;
+      }).join("") || "<p>Your cart is empty.</p>";
+      document.getElementById("total").textContent = `Total: ${peso(total)}`;
+    }
+    load();
+  </script>
+</body></html>
