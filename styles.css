@@ -45,3 +45,9 @@ nav a {
   gap: 16px;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
+
+
+/* UniThrift helpers */
+.btn:hover { opacity: 0.92; transform: translateY(-1px); transition: .15s ease; }
+.chip:hover { border-color:#cbd5e1; transform: translateY(-1px); transition: .15s ease; }
+.card:hover { border-color:#e5e7eb; transition:.15s ease; }
