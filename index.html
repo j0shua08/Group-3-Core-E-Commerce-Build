@@ -1,20 +1,202 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <link rel="stylesheet" href="css/styles.css">
-  <title>Home - Marketplace MVP</title>
+
+  <!-- SEO meta tags -->
+<meta name="description" content="UniThrift is a student marketplace for buying and selling preloved items safely near your campus.">
+<meta name="keywords" content="UniThrift, student marketplace, preloved items, Ateneo, campus shop">
+<meta name="author" content="Group 3 - UniThrift">
+
+<!-- Open Graph (for social media preview) -->
+<meta property="og:title" content="UniThrift – Buy & Sell Preloved Campus Items">
+<meta property="og:description" content="Find trusted sellers and affordable preloved goods near your university.">
+<meta property="og:image" content="https://unithrift.netlify.app/preview.png">
+<meta property="og:url" content="https://unithrift.netlify.app/">
+
+<!-- Mobile-friendly -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UniThrift • Campus Marketplace</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Minimal page-scoped styles (safe even if styles.css exists) */
+    :root {
+      --brand: #1e3a8a;     /* navy */
+      --accent: #16a34a;    /* green */
+      --sand: #faf6ef;      /* thrift-y warm bg */
+      --ink: #111827;
+      --muted: #6b7280;
+      --card: #ffffff;
+    }
+    body { background: var(--sand); color: var(--ink); }
+    header { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 20px; background:#fff; border-bottom:1px solid #eee; position:sticky; top:0; z-index:10; }
+    .logo { display:flex; align-items:center; gap:10px; font-weight:800; font-size:1.05rem; color:var(--brand); }
+    .nav { display:flex; align-items:center; gap:14px; }
+    .nav a { text-decoration:none; color:var(--ink); font-weight:600; }
+    .cart-link { position:relative; }
+    .badge { position:absolute; top:-8px; right:-10px; font-size:12px; min-width:18px; height:18px; display:grid; place-items:center; background:var(--accent); color:#fff; border-radius:999px; padding:0 5px; }
+    .campus-select { padding:8px 10px; border:1px solid #e5e7eb; border-radius:8px; background:#fff; }
+
+    .hero { display:grid; gap:14px; padding:32px 20px; max-width:1100px; margin:0 auto; }
+    .hero h1 { font-size:clamp(1.6rem, 2.4vw + 1rem, 2.4rem); line-height:1.15; }
+    .hero p { color:var(--muted); }
+    .actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:4px; }
+    .btn { display:inline-block; padding:10px 14px; border-radius:10px; border:1px solid transparent; background:var(--brand); color:#fff; text-decoration:none; font-weight:700; }
+    .btn.secondary { background:#fff; color:var(--ink); border-color:#e5e7eb; }
+    .chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+    .chip { padding:8px 12px; border:1px solid #e5e7eb; background:#fff; border-radius:999px; font-size:.95rem; cursor:pointer; }
+
+    .grid { display:grid; grid-template-columns:repeat(12,1fr); gap:16px; max-width:1100px; padding:16px 20px; margin:0 auto; }
+    .card { grid-column: span 12; background:var(--card); border:1px solid #eee; border-radius:14px; padding:16px; }
+    @media (min-width:720px){ .card.sm-6 { grid-column: span 6; } .card.sm-3 { grid-column: span 3; } }
+    .card h3 { margin:0 0 8px 0; }
+    .card p { color:var(--muted); margin:0; }
+    .card a { text-decoration:none; font-weight:700; color:var(--brand); }
+
+    .collections { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+    @media (min-width:720px){ .collections { grid-template-columns:repeat(4,1fr); } }
+    .collection { background:#fff; border:1px solid #eee; border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:6px; }
+    .collection h4 { margin:0; }
+    .collection span { color:var(--muted); font-size:.9rem; }
+    .collection button { margin-top:4px; }
+
+    footer { max-width:1100px; margin:24px auto; padding:16px 20px; color:var(--muted); }
+  </style>
 </head>
 <body>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="listings.html">Listings</a>
-    <a href="cart.html">Cart</a>
-  </nav>
+  <header>
+    <div class="logo" aria-label="UniThrift">
+      <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3 7.5 12 3l9 4.5-9 4.5L3 7.5Zm0 4 9 4.5 9-4.5v6L12 22 3 17.5v-6Z"/></svg>
+      UniThrift
+    </div>
+    <nav class="nav" aria-label="Primary">
+      <a href="index.html" aria-current="page">Home</a>
+      <a href="listings.html">Shop</a>
+      <a class="cart-link" href="cart.html" aria-label="Cart">
+        Cart <span id="cartBadge" class="badge" style="display:none">0</span>
+      </a>
+      <select id="campusSelect" class="campus-select" aria-label="Select campus">
+        <option value="ADMU" selected>Ateneo (ADMU)</option>
+        <option value="UPD">UP Diliman (UPD)</option>
+        <option value="UST">UST</option>
+      </select>
+    </nav>
+  </header>
 
-  <div class="container">
-    <h1>Welcome to UniThrift!</h1>
-    <p>Buy and sell items among your college communities!</p>
-  </div>
+  <main>
+    <!-- HERO -->
+    <section class="hero">
+      <h1>Thrift smart. Buy & sell within your campus.</h1>
+      <p>Find books, gadgets, org merch, and dorm essentials from fellow students. Meet up at campus gates or nearby spots. Pay via GCash.</p>
+      <div class="actions">
+        <a id="shopNowBtn" class="btn" href="listings.html?campus=ADMU">Shop now</a>
+        <a class="btn secondary" href="listings.html?campus=ADMU&category=Preloved">Preloved deals</a>
+      </div>
+      <div class="chips" aria-label="Quick budget filters">
+        <button class="chip" data-price-max="100">Under ₱100</button>
+        <button class="chip" data-price-min="100" data-price-max="200">₱100–₱200</button>
+        <button class="chip" data-category="School Supplies">School Supplies</button>
+        <button class="chip" data-category="Books">Books</button>
+      </div>
+    </section>
+
+    <!-- PICKUP / TRUST -->
+    <section class="grid" aria-label="Campus quick info">
+      <div class="card sm-6">
+        <h3>Pickup near your gate</h3>
+        <p>Common meetup spots: Gate 2.5, SEC-A Lobby, Regis, Katipunan LRT.</p>
+        <a id="pickupCta" href="listings.html?campus=ADMU&pickup=true">See items near pickup spots →</a>
+      </div>
+      <div class="card sm-6">
+        <h3>Why UniThrift?</h3>
+        <p>Student-only marketplace • GCash-ready • Safer than random FB groups • Reduce waste via re-use</p>
+      </div>
+    </section>
+
+    <!-- FEATURED COLLECTIONS -->
+    <section class="grid" aria-label="Featured collections">
+      <div class="card" style="padding-bottom:8px;">
+        <h3>Featured Collections</h3>
+        <div class="collections">
+          <div class="collection">
+            <h4>Preloved Clothes</h4>
+            <span>Find steals under ₱150</span>
+            <button class="chip" data-category="Preloved">Shop</button>
+          </div>
+          <div class="collection">
+            <h4>Books</h4>
+            <span>GE, majors, reviewers</span>
+            <button class="chip" data-category="Books">Shop</button>
+          </div>
+          <div class="collection">
+            <h4>School Supplies</h4>
+            <span>Pens, bond paper, calc</span>
+            <button class="chip" data-category="School Supplies">Shop</button>
+          </div>
+          <div class="collection">
+            <h4>Gadgets</h4>
+            <span>Earphones, keyboards, mice</span>
+            <button class="chip" data-category="Gadgets">Shop</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>© 2025 UniThrift — For Students, By Students</footer>
+
+  <script>
+    // --- STATE: current campus (defaults to ADMU)
+    const campusSelect = document.getElementById('campusSelect');
+    const shopNowBtn = document.getElementById('shopNowBtn');
+    const pickupCta = document.getElementById('pickupCta');
+
+    function buildListingsURL(params = {}) {
+      const sp = new URLSearchParams({ campus: campusSelect.value, ...params });
+      return `listings.html?${sp.toString()}`;
+    }
+
+    // Update CTAs when campus changes
+    campusSelect.addEventListener('change', () => {
+      shopNowBtn.href = buildListingsURL();
+      pickupCta.href = buildListingsURL({ pickup: 'true' });
+    });
+
+    // Budget/category chips → navigate to listings with filters
+    document.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const params = {};
+        const pmn = chip.getAttribute('data-price-min');
+        const pmx = chip.getAttribute('data-price-max');
+        const cat = chip.getAttribute('data-category');
+
+        if (pmn) params.priceMin = pmn;
+        if (pmx) params.priceMax = pmx;
+        if (cat) params.category = cat;
+
+        window.location.href = buildListingsURL(params);
+      });
+    });
+
+    // Cart badge (works with localStorage used by your cart.js)
+    function updateCartBadge() {
+      try {
+        const raw = localStorage.getItem('cart') || '[]';
+        const items = JSON.parse(raw);
+        const qty = Array.isArray(items) ? items.reduce((n, i) => n + (i.quantity || 1), 0) : 0;
+        const badge = document.getElementById('cartBadge');
+        if (qty > 0) {
+          badge.textContent = qty;
+          badge.style.display = 'grid';
+        } else {
+          badge.style.display = 'none';
+        }
+      } catch (e) { /* fail silently */ }
+    }
+    updateCartBadge();
+    window.addEventListener('storage', updateCartBadge);
+  </script>
 </body>
 </html>
-

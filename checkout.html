@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!-- SEO meta tags -->
+<meta name="description" content="UniThrift is a student marketplace for buying and selling preloved items safely near your campus.">
+<meta name="keywords" content="UniThrift, student marketplace, preloved items, Ateneo, campus shop">
+<meta name="author" content="Group 3 - UniThrift">
+
+<!-- Open Graph (for social media preview) -->
+<meta property="og:title" content="UniThrift – Buy & Sell Preloved Campus Items">
+<meta property="og:description" content="Find trusted sellers and affordable preloved goods near your university.">
+<meta property="og:image" content="https://unithrift.netlify.app/preview.png">
+<meta property="og:url" content="https://unithrift.netlify.app/">
+
+<!-- Mobile-friendly -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Checkout • UniThrift</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      margin: 24px;
+      color: #111827;
+    }
+    .card {
+      max-width: 720px;
+      margin: 0 auto;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+    }
+    h1 { margin: 0 0 8px; }
+    .muted { color: #6b7280; margin: 0 0 16px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { padding: 8px 6px; border-bottom: 1px solid #f1f5f9; text-align: left; }
+    tfoot td { font-weight: 700; }
+    .actions { margin-top: 16px; display: flex; gap: 8px; }
+    button { padding: 10px 14px; border: 0; border-radius: 8px; cursor: pointer; }
+    #placeOrder { background: black; color: white; }
+    #clearCart { background: #e5e7eb; }
+    .ok {
+      color: #166534;
+      background: #dcfce7;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 16px;
+      display: none;
+    }
+    .err {
+      color: #991b1b;
+      background: #fee2e2;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 16px;
+      display: none;
+    }
+    .post-actions {
+      display: none;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .link {
+      background: #111827;
+      color: white;
+      text-decoration: none;
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 8px;
+    }
+    .ghost { background: #e5e7eb; color: #111827; }
+    label { font-weight: 600; display: block; margin-top: 16px; }
+    input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Checkout</h1>
+    <p class="muted">Review your items then place your order.</p>
+
+    <table id="cartTable" aria-label="Cart items">
+      <thead>
+        <tr><th>Item</th><th>Qty</th><th>Price</th><th>Subtotal</th></tr>
+      </thead>
+      <tbody id="cartBody"></tbody>
+      <tfoot>
+        <tr><td colspan="3">Total</td><td id="grandTotal">₱0</td></tr>
+      </tfoot>
+    </table>
+
+    <!-- ZIP & City Live API -->
+    <label for="zip">Enter ZIP Code:</label>
+    <input type="text" id="zip" placeholder="e.g. 1108">
+    <p id="cityInfo" class="muted">City: —</p>
+
+    <div class="actions" id="preActions">
+      <button type="button" id="placeOrder">Place Order</button>
+      <button type="button" id="clearCart">Clear Cart</button>
+    </div>
+
+    <div id="ok" class="ok"></div>
+    <div id="err" class="err"></div>
+
+    <div id="postActions" class="post-actions">
+      <a href="index.html" class="link">Back to Shop</a>
+      <a href="index.html" class="link ghost" id="orderAgain">Order Again</a>
+    </div>
+
+    <p class="muted">This demo uses a live API call to <code>https://api.zippopotam.us</code> to fetch your city name.</p>
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:8000";
+
+    function loadCart() {
+      try { return JSON.parse(localStorage.getItem("cart") || "[]"); }
+      catch { return []; }
+    }
+
+    function formatPeso(n) {
+      const num = Number(n) || 0;
+      return "₱" + num.toLocaleString("en-PH", { maximumFractionDigits: 0 });
+    }
+
+    function renderCart() {
+      const cart = loadCart();
+      const tbody = document.getElementById("cartBody");
+      const totalEl = document.getElementById("grandTotal");
+      tbody.innerHTML = "";
+
+      let total = 0;
+      cart.forEach(item => {
+        const sub = (Number(item.price) || 0) * (Number(item.qty) || 0);
+        total += sub;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${item.name ?? "(Unnamed)"}</td>
+          <td>${item.qty ?? 0}</td>
+          <td>${formatPeso(item.price)}</td>
+          <td>${formatPeso(sub)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      totalEl.textContent = formatPeso(total);
+    }
+
+    async function doCheckout() {
+      const ok = document.getElementById("ok");
+      const err = document.getElementById("err");
+      const pre = document.getElementById("preActions");
+      const post = document.getElementById("postActions");
+      ok.style.display = "none";
+      err.style.display = "none";
+
+      const btn = document.getElementById("placeOrder");
+      btn.disabled = true;
+      btn.textContent = "Processing…";
+
+      const cart = loadCart();
+      const items = cart.map(i => ({
+        productId: i.id ?? i.productId ?? String(i.name || "item"),
+        name: i.name ?? "Item",
+        price: Number(i.price) || 0,
+        qty: Number(i.qty) || 0
+      }));
+
+      try {
+        const resp = await fetch(`${API_BASE}/api/cart/checkout`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ items })
+        });
+
+        if (!resp.ok) throw new Error(await resp.text());
+        const data = await resp.json();
+
+        ok.innerHTML = `
+          <strong>Order Confirmed!</strong><br/>
+          Order ID: ${data.orderId ?? "(pending)"}<br/>
+          Total: ${formatPeso(data.total)}<br/>
+          Pickup ETA: ${data.pickup?.etaMins ?? 15} mins
+        `;
+        ok.style.display = "block";
+
+        localStorage.removeItem("cart");
+        renderCart();
+
+        pre.style.display = "none";
+        post.style.display = "flex";
+      } catch (e) {
+        err.textContent = e.message || "Something went wrong during checkout.";
+        err.style.display = "block";
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Place Order";
+      }
+    }
+
+    function clearCart() {
+      localStorage.removeItem("cart");
+      renderCart();
+      document.getElementById("ok").style.display = "none";
+      document.getElementById("err").style.display = "none";
+    }
+
+    // --- Live ZIP Code API Integration ---
+    document.getElementById("zip").addEventListener("input", async (e) => {
+      const zip = e.target.value.trim();
+      const cityEl = document.getElementById("cityInfo");
+      if (zip.length < 4) {
+        cityEl.textContent = "City: —";
+        return;
+      }
+
+      try {
+        const response = await fetch(`https://api.zippopotam.us/ph/${zip}`);
+        if (!response.ok) throw new Error("Invalid ZIP");
+        const data = await response.json();
+        const place = data.places?.[0]?.["place name"] || "Unknown";
+        cityEl.textContent = `City: ${place}`;
+      } catch {
+        cityEl.textContent = "City: (not found)";
+      }
+    });
+
+    document.getElementById("placeOrder").addEventListener("click", doCheckout);
+    document.getElementById("clearCart").addEventListener("click", clearCart);
+    document.getElementById("orderAgain").addEventListener("click", () => {
+      localStorage.removeItem("cart");
+    });
+
+    renderCart();
+  </script>
+</body>
+</html>
