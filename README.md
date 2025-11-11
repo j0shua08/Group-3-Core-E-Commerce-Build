@@ -51,7 +51,7 @@ Before SEO
 [![before](image.png)](https://github.com/j0shua08/Group-3-Core-E-Commerce-Build/blob/9848cc5ce4a2489015408d1ecdf823687cb82e31/beforeseo.png)
 
 After SEO
-![after](image-1.png)
+[![after](image-1.png)](https://github.com/j0shua08/Group-3-Core-E-Commerce-Build/blob/236dd6312a91d671f907bc622588e6f295431383/afterseo.png)
 
 Limitations
 
