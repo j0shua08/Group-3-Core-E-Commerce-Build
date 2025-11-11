@@ -48,7 +48,7 @@ Mobile-responsive design (viewport tag).
 Reduced inline script repetition, optimized DOM lookups.
 
 Before SEO
-![before](image.png)
+[![before](image.png)](https://github.com/j0shua08/Group-3-Core-E-Commerce-Build/blob/9848cc5ce4a2489015408d1ecdf823687cb82e31/beforeseo.png)
 
 After SEO
 ![after](image-1.png)
