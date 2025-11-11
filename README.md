@@ -11,6 +11,9 @@ Hosting	Netlify	   	  -                             -                    Fronten
 Hosting	Render	  	  -                             -                    Backend deployment
 
 
+https://github.com/j0shua08/Group-3-Core-E-Commerce-Build/blob/28af9fae9a3fc1428e3df895ffbe2a723d79eacd/techs.png
+
+
 Running the Backend
     cd server
     npm install
